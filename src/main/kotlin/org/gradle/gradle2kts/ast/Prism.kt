@@ -27,7 +27,7 @@ typealias Prism<S, T> = (S) -> T?
  * Given a prism `f` from [S] to [T], and a prism [g] from [T] to [U],
  * `f / g` gives their composition, a prism from [S] to [U].
  *
- * A.K.A: left-to-right Kleisli composition of the Maybe monad ;)
+ * A.K.A: left-to-right Kleisli composition of the Maybe monad.
  */
 inline
 operator fun <S, T, U> Prism<S, T>.div(crossinline g: Prism<T, U>): Prism<S, U> =
@@ -60,7 +60,7 @@ operator fun <S, T, U> Prism<S, T>.times(g: Prism<S, U>): Prism<S, Pair<T, U>> =
  * Prism constraining.
  *
  * Given a prism `f` from [S] to [T], and a prism [g] from [T] to [U],
- * `f containing g` gives an augmented `f` prism from [S] to [T] that only succeeds
+ * `f containing g` gives a constrained `f` from [S] to [T] that only succeeds
  * if the composition `f / g` also succeeds.
  */
 inline
@@ -78,4 +78,4 @@ fun <reified T> ofType(): Prism<Any, T> =
  * Accepts values equal to [v].
  */
 fun <T> ofValue(v: T): Prism<T, T> =
-    { if (it == v) it else null }
+    { it.takeIf { it == v } }

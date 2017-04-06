@@ -47,12 +47,12 @@ class PrettyPrinter {
                 when {
                     args.lastOrNull() is KLambda -> {
                         if (args.size > 1) {
-                            parenthesize { ppList(args.take(args.size - 1)) }
+                            parenthesize { ppList(args.dropLast(1)) }
                         }
                         +" "
                         pp(args.last())
                     }
-                    else                                                   -> {
+                    else                         -> {
                         parenthesize { ppList(args) }
                     }
                 }
@@ -94,7 +94,7 @@ class PrettyPrinter {
                 parts.forEach { kStringTemplatePart(it) }
                 +"\""
             }
-            else                                         -> {
+            else               -> {
                 throw IllegalArgumentException("Unsupported node: $node")
             }
         }
