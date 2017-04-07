@@ -92,19 +92,19 @@ class IntegrationTest {
 
     @Test fun `can convert property references`() {
         assertConversion(
-            from = "println(buildFile.name)",
+            from = "println buildFile.name",
             to = "println(buildFile.name)")
     }
 
     @Test fun `can convert GString expressions`() {
         assertConversion(
-            from = """println("${'$'}greeting, ${'$'}thing!")""",
-            to = """println("${'$'}greeting, ${'$'}thing!")""")
+            from = "println \"${'$'}greeting, ${'$'}thing!\"",
+            to = "println(\"${'$'}greeting, ${'$'}thing!\")")
     }
 
     @Test fun `can convert assignment`() {
         assertConversion(
-            from = """group = "org.gradle"""",
+            from = "group = 'org.gradle'",
             to = """group = "org.gradle"""")
     }
 
