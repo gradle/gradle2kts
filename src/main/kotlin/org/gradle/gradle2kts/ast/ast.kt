@@ -118,27 +118,20 @@ fun bottomUpTransform(f: Prism<KNode, KNode>): (KNode) -> KNode {
 
     fun mapIdentifier(x: KIdentifier): KIdentifier = f(x)?.let { it as KIdentifier } ?: x
 
-    return y { transform ->
+    fun transform(node: KNode): KNode = node.run {
         when (this) {
-            is KBlock          -> KBlock(children.map(transform))
+            is KBlock          -> KBlock(children.map(::transform))
             is KDelegate       -> KDelegate(mapIdentifier(name), transform(delegate))
             is KMember         -> KMember(transform(parent), mapIdentifier(name))
-            is KInvocation     -> KInvocation(transform(receiver), args.map(transform))
+            is KInvocation     -> KInvocation(transform(receiver), args.map(::transform))
             is KLambda         -> KLambda(transform(body))
             is KNamed          -> KNamed(mapIdentifier(name), transform(value))
             is KInfix          -> KInfix(mapIdentifier(operator), transform(left), transform(right))
-            is KStringTemplate -> KStringTemplate(parts.map(transform))
+            is KStringTemplate -> KStringTemplate(parts.map(::transform))
             is KIdentifier     -> this
             is KConstant       -> this
             KThis              -> this
         }.let { f(it) ?: it }
     }
-}
-
-/**
- * The Y combinator.
- */
-fun <T, U> y(f: T.((T) -> U) -> U): (T) -> U {
-    fun recur(t: T): U = t.f(::recur)
-    return ::recur
+    return ::transform
 }
