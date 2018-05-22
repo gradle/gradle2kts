@@ -1,41 +1,29 @@
 import org.gradle.api.publish.maven.*
+
 import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
+
 import groovy.lang.GroovyObject
-
-buildscript {
-
-    repositories {
-        gradleScriptKotlin()
-    }
-
-    dependencies {
-        classpath(kotlinModule("gradle-plugin"))
-    }
-}
 
 group = "org.gradle.gradle2kts"
 
 version = "0.0.1-SNAPSHOT"
 
 plugins {
+    kotlin("jvm") version "1.2.41" 
     `maven-publish`
     id("com.jfrog.artifactory") version "4.1.1"
 }
 
-apply {
-    plugin("kotlin")
-}
-
 repositories {
-    gradleScriptKotlin()
+    jcenter()
 }
 
 dependencies {
 
     compile(gradleApi())
-    compile(kotlinModule("stdlib"))
-    compile(kotlinModule("reflect"))
+    compile(kotlin("stdlib"))
+    compile(kotlin("reflect"))
 
     testCompile("junit:junit:4.12")
 }
