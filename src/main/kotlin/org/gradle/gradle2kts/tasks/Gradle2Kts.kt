@@ -16,11 +16,15 @@
 
 package org.gradle.gradle2kts.tasks
 
-import org.gradle.api.*
-import org.gradle.api.tasks.*
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
+
 import org.gradle.gradle2kts.conversion.gradle2kts
 
 import java.io.File
+
 
 /**
  * Copies and converts all `*.gradle*` files from [sourceDir] into [destDir].
@@ -28,10 +32,10 @@ import java.io.File
 open class Gradle2Kts : DefaultTask() {
 
     @get:InputDirectory
-    var sourceDir: File? = null
+    lateinit var sourceDir: File
 
     @get:OutputDirectory
-    var destDir: File? = null
+    lateinit var destDir: File
 
     @TaskAction
     fun convert() {
@@ -42,17 +46,26 @@ open class Gradle2Kts : DefaultTask() {
     private
     fun copyAllFiles() {
         project.copy { spec ->
-            spec.from(sourceDir!!)
-            spec.into(destDir!!)
+            spec.from(sourceDir)
+            spec.into(destDir)
         }
     }
 
     private
     fun convertGradleFiles() {
-        destDir!!
-            .walkTopDown()
-            .filter(this::isGradleFile)
-            .forEach(this::convert)
+
+        val results =
+            destDir
+                .walkTopDown()
+                .filter(this::isGradleFile)
+                .map(this::convert)
+                .toList()
+
+        println(
+            "%d snippets out of %d were successfully converted.".format(
+                results.count { it }, results.size
+            )
+        )
     }
 
     private
@@ -62,20 +75,25 @@ open class Gradle2Kts : DefaultTask() {
         }
 
     private
-    fun convert(file: File) {
+    fun convert(file: File): Boolean {
         println("Converting `${project.relativeProjectPath(file.path)}'...")
-        file.writeText(safeGradle2kts(file))
-    }
 
-    private
-    fun safeGradle2kts(file: File) =
-        file.readText().let { code ->
-            try { gradle2kts(code) }
-            catch (e: Throwable) {
+        var success = true
+
+        val groovyCode = file.readText()
+        val convertedCode =
+            try {
+                gradle2kts(groovyCode)
+            } catch (e: Throwable) {
+                success = false
                 reportConversionFailure(file)
-                "// ERROR: $e\n\n$code"
+                "// ERROR: $e\n\n$groovyCode"
             }
-        }
+
+        file.writeText(convertedCode)
+
+        return success
+    }
 
     private
     fun reportConversionFailure(file: File) {
